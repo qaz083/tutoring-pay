@@ -115,7 +115,12 @@ export function Sheet({ t, visible, title, onClose, children, footer }) {
   return (
     <Modal visible={visible} animationType="slide" transparent onRequestClose={onClose}>
       <View style={{ flex: 1, backgroundColor: "rgba(0,0,0,0.4)", justifyContent: "flex-end" }}>
-        <KeyboardAvoidingView behavior={Platform.OS === "ios" ? "padding" : undefined}>
+        {/* KeyboardAvoidingView에 flex를 주지 않으면 높이가 내용 따라 늘어나고,
+            그러면 아래 maxHeight의 기준이 없어져 시트 윗부분이 화면 밖으로 잘린다 */}
+        <KeyboardAvoidingView
+          style={{ flex: 1, justifyContent: "flex-end" }}
+          behavior={Platform.OS === "ios" ? "padding" : undefined}
+        >
           <View style={{
             backgroundColor: t.bg, borderTopLeftRadius: 20, borderTopRightRadius: 20,
             maxHeight: "92%", overflow: "hidden",
@@ -131,9 +136,10 @@ export function Sheet({ t, visible, title, onClose, children, footer }) {
               </Pressable>
             </View>
 
+            {/* flexShrink가 없으면 내용 높이 그대로 버텨서 스크롤이 생기지 않는다 */}
             <ScrollView
-              style={{ paddingHorizontal: 18 }}
-              contentContainerStyle={{ paddingTop: 16, paddingBottom: 24 }}
+              style={{ flexShrink: 1 }}
+              contentContainerStyle={{ paddingHorizontal: 18, paddingTop: 16, paddingBottom: 24 }}
               keyboardShouldPersistTaps="handled"
             >
               {children}
