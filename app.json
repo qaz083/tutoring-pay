@@ -1,0 +1,24 @@
+{
+  "expo": {
+    "name": "과외 정산",
+    "slug": "tutoring-pay",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "userInterfaceStyle": "automatic",
+    "newArchEnabled": true,
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.yangjunhui.tutoringpay"
+    },
+    "android": {
+      "package": "com.yangjunhui.tutoringpay"
+    },
+    "web": {
+      "output": "single",
+      "bundler": "metro"
+    },
+    "experiments": {
+      "baseUrl": "/tutoring-pay"
+    }
+  }
+}

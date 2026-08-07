@@ -1,0 +1,17 @@
+{
+  "name": "과외 정산",
+  "short_name": "과외 정산",
+  "start_url": "/tutoring-pay/",
+  "scope": "/tutoring-pay/",
+  "display": "standalone",
+  "background_color": "#f4f5f7",
+  "theme_color": "#f4f5f7",
+  "icons": [
+    {
+      "src": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxODAgMTgwIj4KPHJlY3Qgd2lkdGg9IjE4MCIgaGVpZ2h0PSIxODAiIHJ4PSI0MCIgZmlsbD0iIzNiNmVmNSIvPgo8cmVjdCB4PSIzOCIgeT0iNDYiIHdpZHRoPSIxMDQiIGhlaWdodD0iOTQiIHJ4PSIxMiIgZmlsbD0iI2ZmZiIvPgo8cmVjdCB4PSIzOCIgeT0iNDYiIHdpZHRoPSIxMDQiIGhlaWdodD0iMjIiIHJ4PSIxMiIgZmlsbD0iI2RiZTRmZiIvPgo8Y2lyY2xlIGN4PSI2MiIgY3k9Ijg4IiByPSI3IiBmaWxsPSIjM2I2ZWY1Ii8+PGNpcmNsZSBjeD0iOTAiIGN5PSI4OCIgcj0iNyIgZmlsbD0iIzNiNmVmNSIvPgo8Y2lyY2xlIGN4PSIxMTgiIGN5PSI4OCIgcj0iNyIgZmlsbD0iI2M3ZDNmNyIvPjxjaXJjbGUgY3g9IjYyIiBjeT0iMTE0IiByPSI3IiBmaWxsPSIjYzdkM2Y3Ii8+CjxjaXJjbGUgY3g9IjkwIiBjeT0iMTE0IiByPSI3IiBmaWxsPSIjMTZhMzRhIi8+PGNpcmNsZSBjeD0iMTE4IiBjeT0iMTE0IiByPSI3IiBmaWxsPSIjYzdkM2Y3Ii8+Cjwvc3ZnPg==",
+      "sizes": "180x180",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    }
+  ]
+}
