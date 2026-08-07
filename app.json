@@ -19,6 +19,9 @@
     },
     "experiments": {
       "baseUrl": "/tutoring-pay"
-    }
+    },
+    "plugins": [
+      "expo-sharing"
+    ]
   }
 }

@@ -7,7 +7,7 @@ import { SafeAreaProvider, SafeAreaView } from "react-native-safe-area-context";
 import { makeTheme, tint } from "./src/theme";
 import {
   COLORS, uid, iso, won, fmtH, fmtDate, isPlan,
-  stats, aggregate, sortedLessons,
+  stats, aggregate, sortedLessons, normalize,
 } from "./src/model";
 import { loadState, saveState } from "./src/storage";
 import { notify, confirmAction } from "./src/dialog";
@@ -16,6 +16,7 @@ import MonthCalendar from "./src/MonthCalendar";
 import DaySheet from "./src/DaySheet";
 import StudentSheet from "./src/StudentSheet";
 import BulkSheet from "./src/BulkSheet";
+import BackupSheet from "./src/BackupSheet";
 
 const now = new Date();
 
@@ -37,6 +38,7 @@ function Main() {
   const [dayDate, setDayDate] = useState(null);
   const [studentSheet, setStudentSheet] = useState(null); // {mode:'new'} | {mode:'edit', id}
   const [bulkOpen, setBulkOpen] = useState(false);
+  const [backupOpen, setBackupOpen] = useState(false);
   const loaded = useRef(false);
 
   useEffect(() => { loadState().then((s) => { setState(s); loaded.current = true; }); }, []);
@@ -102,6 +104,13 @@ function Main() {
   const rowKeys = rows.map((r) => `${r.s.id}|${r.l.id}`);
   const nSel = rowKeys.filter((k) => checked.includes(k)).length;
 
+  // 기록이 쌓였는데 백업이 없거나 오래됐으면 알린다 (30일)
+  const hasRecords = students.some((s) => s.lessons.length || s.payments.length);
+  const backupAge = state.lastBackupAt
+    ? (Date.now() - new Date(state.lastBackupAt + "T00:00:00").getTime()) / 86400000
+    : Infinity;
+  const needsBackup = hasRecords && backupAge > 30;
+
   const shiftMonth = (n) => setYm(({ y, m }) => {
     const d = new Date(y, m + n, 1);
     return { y: d.getFullYear(), m: d.getMonth() };
@@ -165,8 +174,25 @@ function Main() {
           <Text style={{ color: t.ink, fontSize: 24, fontWeight: "800", flex: 1, letterSpacing: -0.5 }}>
             과외 정산
           </Text>
+          <Btn t={t} small label="백업" onPress={() => setBackupOpen(true)} />
           <Btn t={t} small label="＋ 학생" kind="primary" onPress={() => setStudentSheet({ mode: "new" })} />
         </Row>
+
+        {needsBackup && (
+          <Pressable
+            onPress={() => setBackupOpen(true)}
+            style={{
+              backgroundColor: tint(t.warn, 0.14), borderRadius: 12,
+              paddingVertical: 11, paddingHorizontal: 14, marginBottom: 14,
+            }}
+          >
+            <Text style={{ color: t.warn, fontSize: 12.5, fontWeight: "700" }}>
+              {state.lastBackupAt
+                ? `마지막 백업이 ${fmtDate(state.lastBackupAt)}입니다 — 백업해 두세요`
+                : "아직 백업한 적이 없습니다 — 기록은 이 기기에만 있습니다"}
+            </Text>
+          </Pressable>
+        )}
 
         {students.length === 0 ? (
           <Card t={t} style={{ padding: 28, alignItems: "center" }}>
@@ -443,6 +469,16 @@ function Main() {
         month={ym}
         onClose={() => setBulkOpen(false)}
         onAdd={addBulkLessons}
+      />
+
+      <BackupSheet
+        t={t} visible={backupOpen} state={state}
+        onClose={() => setBackupOpen(false)}
+        onExported={() => mutate((n) => { n.lastBackupAt = iso(new Date()); })}
+        onRestore={(data) => {
+          setState(normalize(data));
+          setSel("all"); setChecked([]);
+        }}
       />
     </SafeAreaView>
   );

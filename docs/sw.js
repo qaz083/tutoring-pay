@@ -1,5 +1,5 @@
-const CACHE = "tutoring-pay-v1786125068431";
-const ASSETS = ["/tutoring-pay/","/tutoring-pay/_expo/static/js/web/index-76114712610a6d3d4a2b01599a89b2d5.js","/tutoring-pay/index.html","/tutoring-pay/metadata.json"];
+const CACHE = "tutoring-pay-v1786125744114";
+const ASSETS = ["/tutoring-pay/","/tutoring-pay/_expo/static/js/web/index-83e42195f8c3bdfcacb5c9335eccfaed.js","/tutoring-pay/index.html","/tutoring-pay/metadata.json"];
 self.addEventListener("install", (e) => {
   e.waitUntil(caches.open(CACHE).then((c) => c.addAll(ASSETS)).then(() => self.skipWaiting()));
 });

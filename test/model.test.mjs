@@ -136,6 +136,25 @@ test("예정이 위(다가오는 순), 완료가 아래(최근 순)로 정렬된
   );
 });
 
+test("백업 파일로 내보냈다 불러와도 정산이 그대로다", () => {
+  const before = {
+    lastBackupAt: "2026-08-01",
+    students: [student({
+      payments: [{ id: "p", date: "2026-08-01", amount: 300000 }],
+      lessons: [
+        { id: "a", date: "2026-08-05", hours: 3, rate: 30000, done: true, time: "16:00", note: "지수로그" },
+        { id: "b", date: "2026-08-12", hours: 2, rate: 30000, done: false, time: "", note: "" },
+      ],
+    })],
+  };
+  const after = normalize(JSON.parse(JSON.stringify(before)));
+
+  assert.equal(after.lastBackupAt, "2026-08-01", "백업 시점도 함께 넘어간다");
+  assert.deepEqual(stats(after.students[0]), stats(before.students[0]));
+  assert.equal(after.students[0].lessons[0].note, "지수로그");
+  assert.equal(after.students[0].lessons[1].done, false, "예정 상태가 완료로 바뀌지 않는다");
+});
+
 test("숫자 표기", () => {
   assert.equal(fmtH(3), "3");
   assert.equal(fmtH(1.5), "1.5");
