@@ -1,20 +1,39 @@
 # 과외 정산
 
-선입금 받은 과외비를 수업할 때마다 깎아 나가는 아이폰 앱. Expo(React Native).
+선입금 받은 과외비를 수업할 때마다 깎아 나가는 앱. Expo(React Native).
+
+**아이폰에서 쓰는 주소: https://qaz083.github.io/tutoring-pay/**
+Safari로 열고 `공유 → 홈 화면에 추가`를 하면 홈 화면 아이콘이 생기고, 주소창 없이 앱처럼 뜬다.
 
 ## 실행
 
 ```bash
 npm install
-npm run ios
+npm run ios       # 시뮬레이터
+npm start         # Expo Go (아이폰과 맥이 같은 와이파이여야 한다)
+npm test          # 정산 계산 테스트
 ```
 
-시뮬레이터가 뜨고 Expo Go 안에서 앱이 열린다. 아이폰 실기기로 보려면 `npm start` 후
-터미널의 QR을 아이폰 카메라로 찍는다 (맥과 아이폰이 같은 와이파이에 있어야 한다).
+## 웹으로 배포
+
+`docs/`를 GitHub Pages가 그대로 서빙한다. 코드를 고친 뒤:
 
 ```bash
-npm test    # 정산 계산 테스트
+npm run build:web
+git add docs && git commit -m "chore: 웹 빌드 갱신" && git push
 ```
+
+`scripts/build-web.mjs`가 번들을 만들고 홈 화면 앱용 설정(전체화면 메타 태그, 아이콘,
+오프라인 서비스 워커)을 심는다. 서비스 워커 덕에 **한 번 연 뒤에는 인터넷 없이도 열린다.**
+
+> 경로 주의: `app.json`의 `experiments.baseUrl`이 `/tutoring-pay`로 잡혀 있다.
+> 저장소 이름을 바꾸면 이 값과 `scripts/build-web.mjs`의 `BASE`를 같이 고쳐야 한다.
+
+## 네이티브 앱으로 설치하려면
+
+`ios/`는 커밋하지 않는다 (`npx expo prebuild -p ios`로 언제든 다시 만든다).
+실기기 설치는 **기기의 iOS 버전을 지원하는 Xcode**가 필요하다 — iOS 26 기기라면 Xcode 26 이상.
+무료 Apple ID로 서명하면 7일마다 다시 설치해야 한다.
 
 ## 정산 규칙
 
