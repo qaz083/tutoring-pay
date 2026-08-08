@@ -11,6 +11,7 @@ import {
 } from "./src/model";
 import { loadState, saveState } from "./src/storage";
 import { notify, confirmAction } from "./src/dialog";
+import { printReport } from "./src/print";
 import { Btn, Card, Row, Dot, Tag, Seg } from "./src/ui";
 import MonthCalendar from "./src/MonthCalendar";
 import DaySheet from "./src/DaySheet";
@@ -140,6 +141,21 @@ function Main() {
     setChecked([]);
   };
 
+  /** 선택한 수업으로 학부모께 보낼 내역서를 만든다 */
+  const makeReport = async () => {
+    const groups = [];
+    for (const s of students) {
+      const picked = s.lessons.filter((l) => checked.includes(`${s.id}|${l.id}`));
+      if (picked.length) groups.push({ student: s, lessons: picked });
+    }
+    if (!groups.length) { notify("먼저 내역에 넣을 수업을 선택해 주세요."); return; }
+    try {
+      await printReport(groups, iso(new Date()));
+    } catch (e) {
+      notify(e.message, "내역서를 만들지 못했습니다");
+    }
+  };
+
   const saveStudent = ({ name, rate, color }) => {
     if (studentSheet?.mode === "edit") {
       mutate((n) => { const s = findS(n, studentSheet.id); if (s) Object.assign(s, { name, rate, color }); });
@@ -169,7 +185,11 @@ function Main() {
     <SafeAreaView style={{ flex: 1, backgroundColor: t.bg }}>
       <StatusBar barStyle={t.dark ? "light-content" : "dark-content"} />
 
-      <ScrollView contentContainerStyle={{ padding: 14, paddingBottom: 40 }}>
+      {/* flex를 주지 않으면 내용 높이만큼 늘어나 아래쪽이 화면 밖에서 잘린다 */}
+      <ScrollView
+        style={{ flex: 1 }}
+        contentContainerStyle={{ padding: 14, paddingBottom: 56 }}
+      >
         <Row style={{ marginBottom: 14 }}>
           <Text style={{ color: t.ink, fontSize: 24, fontWeight: "800", flex: 1, letterSpacing: -0.5 }}>
             과외 정산
@@ -344,11 +364,12 @@ function Main() {
                 <Row style={{ marginBottom: 8 }}>
                   <Text style={{ color: t.ink, fontWeight: "800", fontSize: 13 }}>{nSel}건 선택됨</Text>
                 </Row>
-                <Row style={{ gap: 6 }}>
+                <Row style={{ gap: 6, marginBottom: 6 }}>
                   <Btn t={t} small kind="ok" label="완료로 (차감)" onPress={() => bulkApply("done")} style={{ flex: 1 }} />
                   <Btn t={t} small label="예정으로" onPress={() => bulkApply("plan")} style={{ flex: 1 }} />
                   <Btn t={t} small kind="danger" label="삭제" onPress={() => bulkApply("del")} />
                 </Row>
+                <Btn t={t} small kind="primary" label="📄 내역서 만들기 (학부모 전달용)" onPress={makeReport} />
               </Card>
             )}
 
