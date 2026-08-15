@@ -156,12 +156,15 @@ function Main() {
     }
   };
 
-  const saveStudent = ({ name, rate, color }) => {
+  const saveStudent = ({ name, rate, color, guardian = "", subject = "" }) => {
     if (studentSheet?.mode === "edit") {
-      mutate((n) => { const s = findS(n, studentSheet.id); if (s) Object.assign(s, { name, rate, color }); });
+      mutate((n) => {
+        const s = findS(n, studentSheet.id);
+        if (s) Object.assign(s, { name, rate, color, guardian, subject });
+      });
     } else {
       const id = uid();
-      mutate((n) => n.students.push({ id, name, rate, color, payments: [], lessons: [] }));
+      mutate((n) => n.students.push({ id, name, rate, color, guardian, subject, payments: [], lessons: [] }));
       setSel(id);
     }
     setStudentSheet(null);

@@ -73,12 +73,16 @@ export function normalize(raw) {
     if (!Array.isArray(s.payments)) s.payments = [];
     if (!Array.isArray(s.lessons)) s.lessons = [];
     if (!s.color) s.color = COLORS[0];
+    if (s.guardian === undefined) s.guardian = "";   // 학부모 호칭. 비면 "학부모님"
+    if (s.subject === undefined) s.subject = "";     // 새 수업에 미리 채워 넣을 과목
     s.rate = +s.rate || 0;
     for (const l of s.lessons) {
       // 상태 구분이 없던 시절 기록은 '완료'로 본다
       if (l.done === undefined) l.done = true;
       if (l.time === undefined) l.time = "";
       if (l.note === undefined) l.note = "";
+      if (l.subject === undefined) l.subject = "";
+      if (l.homework === undefined) l.homework = "";
       l.hours = +l.hours || 0;
       l.rate = +l.rate || 0;
     }

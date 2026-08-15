@@ -1,9 +1,11 @@
 import React, { useState, useEffect } from "react";
 import { View, Text, Pressable, ScrollView } from "react-native";
 import { Sheet, Btn, Field, Input, Tag, Dot, Card, Row } from "./ui";
-import { won, fmtH, fmtDate, isPlan, eventsOn } from "./model";
+import { won, fmtH, fmtDate, isPlan, eventsOn, stats, iso } from "./model";
 import { notify, confirmAction } from "./dialog";
 import { tint } from "./theme";
+import MessageSheet from "./MessageSheet";
+import SubjectInput from "./SubjectInput";
 
 const HOUR_PRESETS = [1, 1.5, 2, 2.5, 3];
 
@@ -39,16 +41,29 @@ export default function DaySheet({ t, visible, date, students, scope, onClose, a
   const [time, setTime] = useState("");
   const [hours, setHours] = useState("");
   const [note, setNote] = useState("");
+  const [subject, setSubject] = useState("");
+  const [homework, setHomework] = useState("");
   const [payWho, setPayWho] = useState(null);
   const [amount, setAmount] = useState("");
   const [memo, setMemo] = useState("");
+  const [msg, setMsg] = useState(null);   // { kind, student, lesson }
 
   useEffect(() => {
     if (!visible) return;
-    const first = scope[0]?.id ?? null;
-    setWho(first); setPayWho(first);
-    setTime(""); setHours(""); setNote(""); setAmount(""); setMemo("");
+    const first = scope[0] ?? null;
+    setWho(first?.id ?? null); setPayWho(first?.id ?? null);
+    setTime(""); setHours(""); setNote(""); setHomework(""); setAmount(""); setMemo("");
+    setSubject(first?.subject || "");
   }, [visible, date]);
+
+  // 학생을 바꾸면 그 학생이 늘 듣는 과목으로 채워 준다 (직접 친 값은 건드리지 않는다)
+  const pickWho = (id) => {
+    const prev = scope.find((s) => s.id === who);
+    setWho(id);
+    if (!subject.trim() || subject === (prev?.subject || "")) {
+      setSubject(scope.find((s) => s.id === id)?.subject || "");
+    }
+  };
 
   if (!date) return null;
 
@@ -60,8 +75,11 @@ export default function DaySheet({ t, visible, date, students, scope, onClose, a
     const h = parseFloat(hours);
     if (!who) return;
     if (!(h > 0)) { notify("수업 시간을 입력해 주세요."); return; }
-    api.addLesson(who, { date, hours: h, time: time.trim(), note: note.trim(), done });
-    setHours(""); setNote(""); setTime("");
+    api.addLesson(who, {
+      date, hours: h, time: time.trim(), note: note.trim(),
+      subject: subject.trim(), homework: homework.trim(), done,
+    });
+    setHours(""); setNote(""); setTime(""); setHomework("");
   };
 
   const addPay = () => {
@@ -78,6 +96,7 @@ export default function DaySheet({ t, visible, date, students, scope, onClose, a
     : "";
 
   return (
+    <>
     <Sheet
       t={t}
       visible={visible}
@@ -151,11 +170,32 @@ export default function DaySheet({ t, visible, date, students, scope, onClose, a
             </View>
           </Row>
 
+          <Text style={{ color: t.muted, fontSize: 11, fontWeight: "700", marginBottom: 4 }}>과목</Text>
+          <Input
+            t={t} defaultValue={l.subject} placeholder="예) 수학Ⅰ"
+            onEndEditing={(e) => api.editLesson(s.id, l.id, { subject: e.nativeEvent.text.trim() })}
+            style={{ marginBottom: 10 }}
+          />
+
           <Text style={{ color: t.muted, fontSize: 11, fontWeight: "700", marginBottom: 4 }}>진도 · 특이사항</Text>
           <Input
             t={t} multiline defaultValue={l.note}
-            placeholder="예) 수1 지수로그 3단원까지. 숙제 오답 많음"
+            placeholder="예) 지수로그 3단원까지. 오답 정리 함께 봄"
             onEndEditing={(e) => api.editLesson(s.id, l.id, { note: e.nativeEvent.text.trim() })}
+            style={{ marginBottom: 10 }}
+          />
+
+          <Text style={{ color: t.muted, fontSize: 11, fontWeight: "700", marginBottom: 4 }}>숙제</Text>
+          <Input
+            t={t} defaultValue={l.homework} placeholder="예) 워크북 42~48쪽"
+            onEndEditing={(e) => api.editLesson(s.id, l.id, { homework: e.nativeEvent.text.trim() })}
+          />
+
+          <Btn
+            t={t} kind="primary"
+            label={isPlan(l) ? "수업 안내 문자 만들기" : "학부모 보고 문자 만들기"}
+            onPress={() => setMsg({ kind: isPlan(l) ? "reminder" : "progress", student: s, lesson: l })}
+            style={{ marginTop: 12 }}
           />
         </Card>
       ))}
@@ -163,7 +203,7 @@ export default function DaySheet({ t, visible, date, students, scope, onClose, a
       {/* 새 수업 */}
       <Card t={t} style={{ padding: 12, marginBottom: 22, borderStyle: "dashed" }}>
         <Field t={t} label="학생">
-          <StudentPicker t={t} students={scope} value={who} onChange={setWho} />
+          <StudentPicker t={t} students={scope} value={who} onChange={pickWho} />
         </Field>
 
         <Row style={{ gap: 8 }}>
@@ -191,8 +231,16 @@ export default function DaySheet({ t, visible, date, students, scope, onClose, a
           ))}
         </Row>
 
-        <Field t={t} label="진도 · 특이사항 (선택)">
-          <Input t={t} multiline value={note} onChangeText={setNote} placeholder="예) 수1 지수로그 3단원까지" />
+        <Field t={t} label="과목 (선택)">
+          <SubjectInput t={t} value={subject} onChange={setSubject} />
+        </Field>
+
+        <Field t={t} label="진도 · 특이사항 (선택)" hint="여기 적은 내용이 학부모 보고 문자의 본문이 됩니다.">
+          <Input t={t} multiline value={note} onChangeText={setNote} placeholder="예) 지수로그 3단원까지" />
+        </Field>
+
+        <Field t={t} label="숙제 (선택)">
+          <Input t={t} value={homework} onChangeText={setHomework} placeholder="예) 워크북 42~48쪽" />
         </Field>
 
         <Row style={{ gap: 8 }}>
@@ -247,5 +295,17 @@ export default function DaySheet({ t, visible, date, students, scope, onClose, a
         <Btn t={t} label="입금 추가" onPress={addPay} />
       </Card>
     </Sheet>
+
+    <MessageSheet
+      t={t}
+      visible={!!msg}
+      kind={msg?.kind}
+      student={msg?.student}
+      lesson={msg?.lesson}
+      balance={msg?.student ? stats(msg.student) : null}
+      today={iso(new Date())}
+      onClose={() => setMsg(null)}
+    />
+    </>
   );
 }
